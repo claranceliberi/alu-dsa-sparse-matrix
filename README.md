@@ -1,81 +1,68 @@
-# Sparse Matrix Operations
+# Matrix Sparsity Library
 
-This program performs operations on sparse matrices using a custom `SparseMatrix` class. It allows users to add, subtract, or multiply two sparse matrices loaded from files.
+A specialized Node.js library for efficient sparse matrix computations. This implementation optimizes memory usage by storing only non-zero elements.
 
-## Table of Contents
+## Overview
 
-- [Sparse Matrix Operations](#sparse-matrix-operations)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [File Format](#file-format)
-  - [Supported Operations](#supported-operations)
-  - [Output](#output)
-  - [SparseMatrix Class](#sparsematrix-class)
-  - [Error Handling](#error-handling)
+- **Core Functionality**: Performs addition, subtraction, and multiplication on sparse matrices
+- **Storage Format**: Uses coordinate format (COO) for matrix representation
+- **I/O Handling**: Reads from and writes to structured text files
 
-## Installation
+## Getting Started
 
-1. Ensure you have Node.js installed on your system.
-2. Clone this repository or download the source files.
-3. Navigate to the project directory in your terminal.
+### Prerequisites
+- Node.js runtime environment
+- Local storage access for file I/O
 
-## Usage
+### Quick Start
+1. Install Node.js
+2. Clone/download the source code
+3. Execute with: `node index.js`
 
-To run the program:
+### Matrix Input Specification
 
+Matrices are defined in text files using this structure:
 ```
-node index.js
-```
-
-The program will prompt you to select an operation (add/subtract/multiply). Enter your choice and press Enter.
-
-## File Format
-
-Input matrices should be stored in text files with the following format:
-
-```
-rows=<number_of_rows>
-cols=<number_of_columns>
-(row, column, value)
-(row, column, value)
-...
+rows=M
+cols=N
+(i, j, value)
 ```
 
-Example:
+Where:
+- `M`, `N`: Matrix dimensions
+- `i`: Zero-based row index
+- `j`: Zero-based column index
+- `value`: Non-zero element value
+
+Example Matrix:
 ```
-rows=3
-cols=3
-(0, 0, 1)
-(1, 1, 2)
-(2, 2, 3)
+rows=4
+cols=4
+(0, 1, 7.0)
+(2, 3, -2.5)
 ```
 
-## Supported Operations
+## Core Operations
 
-1. **Addition**: Adds two sparse matrices element-wise.
-2. **Subtraction**: Subtracts the second matrix from the first element-wise.
-3. **Multiplication**: Performs matrix multiplication of the two input matrices.
+### Available Functions
+- Matrix Addition (A + B)
+- Matrix Subtraction (A - B)
+- Matrix Multiplication (A × B)
 
-## Output
+### Implementation Details
+- **Storage**: Optimized for sparse data structures
+- **Performance**: Leverages sparsity for efficient computations
+- **Output**: Results written to `results.txt` in consistent format
 
-The result of the operation is saved to a file named `results.txt` in the same format as the input files.
+## Technical Notes
 
-## SparseMatrix Class
+### Error Detection
+- Dimension compatibility validation
+- File format verification
+- I/O operation monitoring
 
-The `SparseMatrix` class is used to represent and manipulate sparse matrices efficiently. Key features include:
-
-- Loading matrices from files
-- Efficient storage
-- Methods for addition, subtraction, and multiplication
-- Progress tracking for multiplication operations
-
-## Error Handling
-
-The program includes error handling for:
-
-- Invalid file formats
-- Mismatched matrix dimensions for operations
-- File read/write errors
-
-If an error occurs, an appropriate error message will be displayed.
+### SparseMatrix Class
+Implements:
+- Sparse storage optimization
+- Matrix operation algorithms
+- Progress monitoring for complex operations
