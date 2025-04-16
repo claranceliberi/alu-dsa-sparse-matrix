@@ -85,7 +85,8 @@ class SparseMatrix {
   }
 
   /**
-   * Adds another SparseMatrix to this one.
+   * Adds another SparseMatrix to this one (sparse-aware).
+   * Only iterates over non-zero elements for efficiency.
    * @param {SparseMatrix} other - The matrix to add.
    * @returns {SparseMatrix} A new SparseMatrix representing the sum.
    */
@@ -93,23 +94,28 @@ class SparseMatrix {
     if (this.rows !== other.rows || this.cols !== other.cols) {
       throw new Error("Matrix dimensions do not match for addition");
     }
-
     const result = new SparseMatrix({ rows: this.rows, cols: this.cols });
-
-    for (let row = 0; row <= this.rows; row++) {
-      for (let col = 0; col <= this.cols; col++) {
-        const sum = this.getElement(row, col) + other.getElement(row, col);
-        if (sum !== 0) {
-          result.setElement(row, col, sum);
+    // Add all elements from this matrix
+    for (const [key, value] of this.elements) {
+      const sum = value + other.getElement(...key.split(',').map(Number));
+      if (sum !== 0) {
+        result.elements.set(key, sum);
+      }
+    }
+    // Add elements from other matrix not already in this matrix
+    for (const [key, value] of other.elements) {
+      if (!this.elements.has(key)) {
+        if (value !== 0) {
+          result.elements.set(key, value);
         }
       }
     }
-
     return result;
   }
 
   /**
-   * Subtracts another SparseMatrix from this one.
+   * Subtracts another SparseMatrix from this one (sparse-aware).
+   * Only iterates over non-zero elements for efficiency.
    * @param {SparseMatrix} other - The matrix to subtract.
    * @returns {SparseMatrix} A new SparseMatrix representing the difference.
    */
@@ -117,72 +123,61 @@ class SparseMatrix {
     if (this.rows !== other.rows || this.cols !== other.cols) {
       throw new Error("Matrix dimensions do not match for subtraction");
     }
-
     const result = new SparseMatrix({ rows: this.rows, cols: this.cols });
-
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        const diff = this.getElement(row, col) - other.getElement(row, col);
-        if (diff !== 0) {
-          result.setElement(row, col, diff);
+    // Subtract all elements from this matrix
+    for (const [key, value] of this.elements) {
+      const diff = value - other.getElement(...key.split(',').map(Number));
+      if (diff !== 0) {
+        result.elements.set(key, diff);
+      }
+    }
+    // Subtract elements from other matrix not already in this matrix
+    for (const [key, value] of other.elements) {
+      if (!this.elements.has(key)) {
+        if (-value !== 0) {
+          result.elements.set(key, -value);
         }
       }
     }
-
     return result;
   }
 
   /**
-   * Multiplies this SparseMatrix with another.
+   * Multiplies this SparseMatrix with another (sparse-aware, correct).
+   * For each non-zero (i, k) in this, and each non-zero (k, j) in other, accumulate at (i, j).
    * @param {SparseMatrix} other - The matrix to multiply with.
    * @param {Function} progressCallback - A callback function to report progress.
    * @returns {SparseMatrix} A new SparseMatrix representing the product.
    */
   multiply(other, progressCallback) {
     if (this.cols !== other.rows) {
-      throw new Error(
-        "Matrix dimensions are not compatible for multiplication"
-      );
+      throw new Error("Matrix dimensions are not compatible for multiplication");
     }
-
     const result = new SparseMatrix({ rows: this.rows, cols: other.cols });
-
-    // Create a column-indexed version of the other matrix for efficient access
-    const columnIndexedOther = new Map();
-    for (const [key, value] of other.elements) {
-      const [row, col] = key.split(",").map(Number);
-      if (!columnIndexedOther.has(col)) {
-        columnIndexedOther.set(col, new Map());
-      }
-      columnIndexedOther.get(col).set(row, value);
-    }
-
     let operationsPerformed = 0;
-    const totalOperations = this.elements.size * other.cols;
-
-    for (const [key1, value1] of this.elements) {
-      const [row1, col1] = key1.split(",").map(Number);
-
-      for (let col2 = 0; col2 < other.cols; col2++) {
-        if (columnIndexedOther.has(col2)) {
-          const column = columnIndexedOther.get(col2);
-          if (column.has(col1)) {
-            const value2 = column.get(col1);
-            const currentValue = result.getElement(row1, col2);
-            const newValue = currentValue + value1 * value2;
-            if (newValue !== 0) {
-              result.setElement(row1, col2, newValue);
-            }
+    const totalOperations = this.elements.size * other.elements.size;
+    // For each non-zero in this matrix
+    for (const [keyA, valueA] of this.elements) {
+      const [rowA, colA] = keyA.split(',').map(Number);
+      // For each non-zero in other matrix where row == colA
+      for (const [keyB, valueB] of other.elements) {
+        const [rowB, colB] = keyB.split(',').map(Number);
+        if (rowB === colA) {
+          const resKey = `${rowA},${colB}`;
+          const current = result.elements.get(resKey) || 0;
+          const newValue = current + valueA * valueB;
+          if (newValue !== 0) {
+            result.elements.set(resKey, newValue);
+          } else if (result.elements.has(resKey)) {
+            result.elements.delete(resKey);
           }
         }
-
         operationsPerformed++;
         if (progressCallback && operationsPerformed % 1000000 === 0) {
           progressCallback(operationsPerformed / totalOperations);
         }
       }
     }
-
     return result;
   }
 

@@ -8,15 +8,55 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Load matrices from files
-const matrix1 = new SparseMatrix("./input_for_students/easy_sample_03_1.txt");
-const matrix2 = new SparseMatrix("./input_for_students/easy_sample_03_2.txt");
+let matrix1, matrix2;
+
+function promptForFiles() {
+  rl.question("Enter path to first matrix file: ", (file1) => {
+    rl.question("Enter path to second matrix file: ", (file2) => {
+      try {
+        matrix1 = new SparseMatrix(file1.trim());
+        matrix2 = new SparseMatrix(file2.trim());
+      } catch (err) {
+        console.error("Error loading matrices:", err.message);
+        rl.close();
+        return;
+      }
+      promptForOperation();
+    });
+  });
+}
+
+function promptForOperation() {
+  rl.question("Select operation (add/subtract/multiply): ", (answer) => {
+    performOperation(answer.toLowerCase());
+  });
+}
+
+// Prompt for operation first, then for file paths
+rl.question("Select operation (add/subtract/multiply): ", (operation) => {
+  rl.question("Enter path to first matrix file: ", (file1) => {
+    rl.question("Enter path to second matrix file: ", (file2) => {
+      let matrix1, matrix2;
+      try {
+        matrix1 = new SparseMatrix(file1.trim());
+        matrix2 = new SparseMatrix(file2.trim());
+      } catch (err) {
+        console.error("Error loading matrices:", err.message);
+        rl.close();
+        return;
+      }
+      performOperation(operation.toLowerCase(), matrix1, matrix2);
+    });
+  });
+});
 
 /**
  * Performs the selected matrix operation and saves the result to a file.
  * @param {string} operation - The operation to perform: "add", "subtract", or "multiply".
+ * @param {SparseMatrix} matrix1 - First matrix
+ * @param {SparseMatrix} matrix2 - Second matrix
  */
-function performOperation(operation) {
+function performOperation(operation, matrix1, matrix2) {
   let result;
   switch (operation) {
     case "add":
@@ -38,6 +78,12 @@ function performOperation(operation) {
 
   // Convert result to string
   const resultString = result.toString();
+
+  // Debug: Print number of non-zero elements and preview
+  const numNonZero = result.elements.size;
+  console.log(`Non-zero elements in result: ${numNonZero}`);
+  console.log('Preview of result file:');
+  console.log(resultString.split('\n').slice(0, 12).join('\n'));
 
   // Write result to file
   fs.writeFile("results.txt", resultString, (err) => {

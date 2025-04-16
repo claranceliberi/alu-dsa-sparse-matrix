@@ -1,68 +1,73 @@
-# Matrix Sparsity Library
+# Matrix Sparse Matrix Operations
 
-A specialized Node.js library for efficient sparse matrix computations. This implementation optimizes memory usage by storing only non-zero elements.
+This project implements a memory-efficient SparseMatrix class and supports addition, subtraction, and multiplication of large sparse matrices, as required by the ALU DSA assignment.
 
-## Overview
+## Features
+- Efficiently stores only non-zero elements
+- Custom file parser (no regex or built-in libraries for core logic)
+- Supports addition, subtraction, and multiplication
+- Handles invalid input formats and dimension mismatches
+- Interactive CLI: **First select operation, then select files** (per assignment instructions)
 
-- **Core Functionality**: Performs addition, subtraction, and multiplication on sparse matrices
-- **Storage Format**: Uses coordinate format (COO) for matrix representation
-- **I/O Handling**: Reads from and writes to structured text files
+## Usage
 
-## Getting Started
+1. Place your matrix files in the appropriate directory (e.g., `input_for_students` or `my_small_inputs`).
+2. Run the program:
+   ```bash
+   node index.js
+   ```
+3. Follow the prompts:
+   - **First:** Enter the operation (`add`, `subtract`, or `multiply`).
+   - **Then:** Enter the path to the first matrix file (e.g., `my_small_inputs/matrix1.txt`)
+   - **Then:** Enter the path to the second matrix file (e.g., `my_small_inputs/matrix2.txt`)
+4. The result will be saved to `results.txt` in the project directory. The console will show a preview and the number of non-zero elements.
 
-### Prerequisites
-- Node.js runtime environment
-- Local storage access for file I/O
-
-### Quick Start
-1. Install Node.js
-2. Clone/download the source code
-3. Execute with: `node index.js`
-
-### Matrix Input Specification
-
-Matrices are defined in text files using this structure:
+## Input File Format
+Each matrix file must follow this format:
 ```
-rows=M
-cols=N
-(i, j, value)
+rows=3
+cols=3
+(0, 0, 1)
+(1, 1, 2)
+(2, 2, 3)
+```
+- The first line gives the number of rows.
+- The second line gives the number of columns.
+- Each subsequent line gives a non-zero entry as (row, col, value).
+- Whitespace is ignored. Invalid lines or formats will trigger an error.
+
+## Assignment Restrictions
+- **No built-in libraries** (e.g., regex, Map, Set, Array methods for matrix logic): All core logic is implemented manually.
+- **Error handling:**
+  - If the input file format is invalid, the program throws an error and exits.
+  - If matrix dimensions do not match for the selected operation, an error is shown.
+- **Efficient:** Only non-zero elements are stored and processed.
+
+## Testing
+- For quick tests, use files from `my_small_inputs`.
+- For full assignment/benchmark tests, use files from `input_for_students` (note: these are very large and may take time to process).
+
+## Example
+```
+Select operation (add/subtract/multiply): add
+Enter path to first matrix file: my_small_inputs/matrix1.txt
+Enter path to second matrix file: my_small_inputs/matrix2.txt
+Non-zero elements in result: 5
+Preview of result file:
+rows=3
+cols=3
+(0, 0, 1)
+(1, 1, 1)
+(2, 2, 4)
+(0, 2, -5)
+(2, 0, -7)
+Results have been saved to results.txt
 ```
 
-Where:
-- `M`, `N`: Matrix dimensions
-- `i`: Zero-based row index
-- `j`: Zero-based column index
-- `value`: Non-zero element value
+## Notes
+- You can use any compatible pair of files for any operation, as long as their dimensions match the mathematical requirements.
+- For multiplication: the number of columns in the first matrix must equal the number of rows in the second matrix.
+- The program is robust to whitespace and will notify you of any format errors.
 
-Example Matrix:
-```
-rows=4
-cols=4
-(0, 1, 7.0)
-(2, 3, -2.5)
-```
-
-## Core Operations
-
-### Available Functions
-- Matrix Addition (A + B)
-- Matrix Subtraction (A - B)
-- Matrix Multiplication (A × B)
-
-### Implementation Details
-- **Storage**: Optimized for sparse data structures
-- **Performance**: Leverages sparsity for efficient computations
-- **Output**: Results written to `results.txt` in consistent format
-
-## Technical Notes
-
-### Error Detection
-- Dimension compatibility validation
-- File format verification
-- I/O operation monitoring
-
-### SparseMatrix Class
-Implements:
-- Sparse storage optimization
-- Matrix operation algorithms
-- Progress monitoring for complex operations
+## Citation
+If you reuse or adapt this code, please cite the author and the ALU DSA course assignment.
